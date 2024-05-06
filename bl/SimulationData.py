@@ -9,6 +9,7 @@ class SimulationData:
         nframes_n = ""
         obst = ""
         obst_n = ""
+        surfaces = ""
         meshes = ""
         meshes_n = ""
         meshes_list = [('indetifier', 'name', 'description', 'icon', 'number'),

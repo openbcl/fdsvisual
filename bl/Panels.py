@@ -45,12 +45,12 @@ class SimulationSetup(PropertyGroup):
 
 
 
-class VIEW3D_PT_FDSVision(Panel):
+class VIEW3D_PT_FDSVisual(Panel):
     bl_label = "Simulation Setup"     #name in layout
-    bl_idname = "VIEW3D_PT_FDSVision"       #identifier (PT=PanelType)
+    bl_idname = "VIEW3D_PT_FDSVisual"       #identifier (PT=PanelType)
     bl_space_type = 'VIEW_3D'       #location where to put addon
     bl_region_type = 'UI'           #specification of location
-    bl_category = 'FDS Vision'  #create new tab with this name
+    bl_category = 'FDS Visual'  #create new tab with this name
     
     def draw(self, context):
         layout = self.layout
@@ -71,8 +71,8 @@ class VIEW3D_PT_SimulationData(Panel):
     bl_idname = "VIEW3D_PT_SimulationData"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
-    bl_category = 'FDS Vision'
-    bl_parent_id = "VIEW3D_PT_FDSVision"
+    bl_category = 'FDS Visual'
+    bl_parent_id = "VIEW3D_PT_FDSVisual"
     
     def draw(self, context):
         layout = self.layout
@@ -101,8 +101,8 @@ class VIEW3D_PT_Geometry(Panel):
     bl_idname = "VIEW3D_PT_Geometry"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
-    bl_category = 'FDS Vision'
-    # bl_parent_id = "VIEW3D_PT_FDSVision"
+    bl_category = 'FDS Visual'
+    # bl_parent_id = "VIEW3D_PT_FDSVisual"
     # bl_options = {'DEFAULT_CLOSED'}
     
     def draw(self, context):
@@ -128,8 +128,8 @@ class VIEW3D_PT_VDB(Panel):
     bl_idname = "VIEW3D_PT_VDB"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
-    bl_category = 'FDS Vision'
-    # bl_parent_id = "VIEW3D_PT_FDSVision"
+    bl_category = 'FDS Visual'
+    # bl_parent_id = "VIEW3D_PT_FDSVisual"
     # bl_options = {'DEFAULT_CLOSED'}
     
     def draw(self, context):
@@ -157,8 +157,8 @@ class VIEW3D_PT_Materials(Panel):
     bl_idname = "VIEW3D_PT_Materials"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
-    bl_category = 'FDS Vision'
-    # bl_parent_id = "VIEW3D_PT_FDSVision"
+    bl_category = 'FDS Visual'
+    # bl_parent_id = "VIEW3D_PT_FDSVisual"
     bl_options = {'DEFAULT_CLOSED'}
     
     def draw(self, context):
@@ -188,7 +188,7 @@ class VIEW3D_PT_Materials(Panel):
 
 bl_classes = [
     SimulationSetup,
-    VIEW3D_PT_FDSVision,
+    VIEW3D_PT_FDSVisual,
     VIEW3D_PT_SimulationData,
     VIEW3D_PT_Geometry,
     VIEW3D_PT_VDB,
