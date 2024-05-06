@@ -44,8 +44,8 @@ If you want to use it for multiple meshes, you need to perform the operation for
 Both operators are available for the entire simulation data as well as custom operations.
 During the import process, the program automatically creates a corresponding collection (either one for all objects or one for each mesh) and adds the relevant elements to it.
 
-**RGBA Values:** If you have assigned an RGBA value directly to the obstacles (OBST) before the simulation, the program recognizes this and displays the objects as in your FDS simulation.
-Currently, it is not possible to read the RGBA value for an OBST from an assigned Surf_ID with an RGB and transparency value. A solution to this problem is still being worked on.
+**RGBA Values:** If you have assigned a 'COLOR', 'RGB' or 'TRANSPARENCY' value directly to the obstacles (OBST) before the simulation, the program recognizes this and displays the objects as in your FDS simulation.
+If you have assigned a Surf_Id with a corresponding 'COLOR', 'RGB' or 'TRANSPARENCY', the programm displays those objects as in your FDS simulation.
 
 ### VDBs
 **Write and import VDB-Sequences:** The main function of this addon is the generation of volumetric data for visualizing fire and smoke.

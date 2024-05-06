@@ -13,6 +13,7 @@ class Object_OT_ImportGeometryAll(Operator):
         from .. import SimulationData
         obst = SimulationData.obst
         obst_n = SimulationData.obst_n
+        surfaces = SimulationData.surfaces
 
         coll_name = "Obstructions_All"
         collections = bpy.data.collections
@@ -24,7 +25,7 @@ class Object_OT_ImportGeometryAll(Operator):
         
             for n in range(obst_n):
                 obj = obst[n]
-                Import_Geometry(obj, coll_name)
+                Import_Geometry(obj, coll_name, surfaces)
         
         return {'FINISHED'}
 
@@ -44,8 +45,10 @@ class Object_OT_ImportGeometryCustom(Operator):
         from .. import SimulationData
         meshes = SimulationData.meshes
 
+        ## Get obstruction data
         obst = meshes[n].obstructions
         obst_n = len(obst)
+        surfaces = SimulationData.surfaces
 
         coll_name = f"Obstructions_{meshes[n].id}"
         collections = bpy.data.collections
@@ -58,14 +61,14 @@ class Object_OT_ImportGeometryCustom(Operator):
         
             for n in range(obst_n):
                 obj = obst[n]
-                Import_Geometry(obj, coll_name)
+                Import_Geometry(obj, coll_name, surfaces)
         
         return {'FINISHED'}
 
 
 
 """Helper Functions"""
-def Import_Geometry(obj, coll_name):
+def Import_Geometry(obj, coll_name, surfaces):
     ## Get some geometry data
     id: str = obj.id
 
@@ -109,35 +112,56 @@ def Import_Geometry(obj, coll_name):
     
     bpy.data.collections[coll_name].objects.link(mesh_obj)
 
-    ## Check color_index of obj and set rgba-value as material
+    ## Set RGBA to obj as material. Priority for each Obst: Color, then Surf_Id with Color, then default ('INERT' = 'Smokeview')
     rgba, color_index = get_rgba(obj)
 
-    if color_index == -1:
-        material = bpy.data.materials.get("Smokeview")
-        mesh_obj.data.materials.append(material)
-    elif color_index == -2:
-        material_name = "Invisible" #später dann rgba
+    if color_index == -3: # Check if Color was assigned to Obst
         shader_name = "GeomImport"
-        create_material(shader_name, material_name, rgba)
-
-        material = bpy.data.materials.get(material_name)
-        mesh_obj.data.materials.append(material)
-    else:
         material_name = f"FDS_Color with {rgba}"
-        shader_name = "GeomImport"
         create_material(shader_name, material_name, rgba)
 
         material = bpy.data.materials.get(material_name)
         mesh_obj.data.materials.append(material)
+
+    elif color_index == -2:
+        shader_name = "GeomImport"
+        material_name = "Invisible"
+        create_material(shader_name, material_name, rgba)
+
+        material = bpy.data.materials.get(material_name)
+        mesh_obj.data.materials.append(material)
+
+    else: # Check if Surf_Id with Color was assigned - otherwise set default surface ('INERT' = 'Smokeview') as material
+        sub_obst = obj[0] #Get the first Subobstruction, if you used 'SURF_IDS' or 'SURF_ID6' --> feature expansion is required.
+        surf_name = sub_obst.side_surfaces[0].name #Take first element, because all six sid_surfaces have same surface name.
+        if surf_name == "INERT":
+            material = bpy.data.materials.get("Smokeview")
+            mesh_obj.data.materials.append(material)
+        else:
+            for s in surfaces:
+                if s.name == surf_name:
+                    surface = s
+                    break
+
+            rgb = surface.rgb
+            transparency = surface.transparency
+            rgba = rgb + (transparency,) #Transform transparency into Tuple
+
+            shader_name = "GeomImport"
+            material_name = f"FDS_SurfId {surf_name} with {rgba}"
+            create_material(shader_name, material_name, rgba)
+
+            material = bpy.data.materials.get(material_name)
+            mesh_obj.data.materials.append(material)
 
 
 
 def get_rgba(obj):
         color_index = obj.color_index
         if color_index == -1:
-            rgba = (1, 0.8, 0.4, 1) # -1 = default color
+            rgba = (1.0, 0.8, 0.4, 1.0) # -1 = default color
         elif color_index == -2:
-            rgba = (1, 1, 1, 0) # -2 = invisible
+            rgba = (1.0, 1.0, 1.0, 0.0) # -2 = invisible
         else:
             rgba = obj.rgba # -3 = use red, green, blue and alpha (rgba attribute) n>0 - use n’th color table entry
         return rgba, color_index

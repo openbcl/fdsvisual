@@ -38,6 +38,8 @@ class Development_OT_SimulationSetup(Operator):
         nframes_n = len(nframes)
         obst = sim.obstructions
         obst_n = len(obst)
+        surfaces = sim.surfaces
+        print("SURFACES:", surfaces)
         meshes = sim.meshes
         meshes_n = len(meshes)
         meshes_list = []
@@ -58,6 +60,7 @@ class Development_OT_SimulationSetup(Operator):
         SimulationData.nframes_n = nframes_n
         SimulationData.obst = obst
         SimulationData.obst_n = obst_n
+        SimulationData.surfaces = surfaces
         SimulationData.meshes = meshes
         SimulationData.meshes_n = meshes_n
         SimulationData.meshes_list = meshes_list
