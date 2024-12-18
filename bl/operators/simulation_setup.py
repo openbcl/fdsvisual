@@ -1,11 +1,28 @@
 import bpy
 from bpy.types import Operator
 
+import ctypes
 import importlib.util
+import site
 import os
-import platform
 import subprocess
 import sys
+
+
+class WM_OT_ToggleSystemConsole(Operator):
+    """Toggle the system console and update the property"""
+    bl_label = "Toggle System Console on/off"
+    bl_idname = "wm.toggle_console_property"
+    
+    def execute(self, context):
+        ## Toggle system console
+        bpy.ops.wm.console_toggle()
+
+        ## Toggle the property
+        setup = context.scene.setup_tool
+        setup.console_toggle = not setup.console_toggle
+        
+        return {'FINISHED'}
 
 
 class Development_OT_SimulationSetup(Operator):
@@ -14,10 +31,8 @@ class Development_OT_SimulationSetup(Operator):
     bl_idname = "wm.simulation_setup"
     
     def execute(self, context):
-        ## Open System Console
-        bpy.ops.wm.console_toggle()
-
-        print("Setup: Get Simulation Data...")
+        print("Setup: Start Simulation Setup...")
+        print("Setup: System Console toggled. To activate or deactivate go to 'Window' -> 'Toggle System Console'")
         ## Check if python module 'fdsreader' is installed, if not start installation
         install_python_package('fdsreader')
         import fdsreader as fds
@@ -87,59 +102,91 @@ class Development_OT_SimulationSetup(Operator):
 
 """Helper Functions"""
 def install_python_package(package_name):
-    if package_name in sys.modules:
-        print(f"{package_name!r} already in sys.modules")
-    elif (spec := importlib.util.find_spec(package_name)) is not None:
-        # If you choose to perform the actual import in BlenderPython
-        def isWindows():
-            return os.name == 'nt'
-        def isMacOS():
-            return os.name == 'posix' and platform.system() == "Darwin"
+    try:
+        # Try to find the package in the current environment
+        print(f"Setup: Attempting to import the module '{package_name}'.")
+        import importlib.util
+        spec = importlib.util.find_spec(package_name)
+        
+        if spec is not None:
+            print(f"Setup: '{package_name}' is already installed and accessible.")
+            return
 
-        def isLinux():
-            return os.name == 'posix' and platform.system() == "Linux"
+        print("Setup: Module not found. Checking for potential package paths...")
+        site_packages = []
 
-        def python_exec():
+        try:
+            if hasattr(site, "getsitepackages"):
+                site_packages.extend(site.getsitepackages())
+            if hasattr(site, "getusersitepackages"):
+                site_packages.append(site.getusersitepackages())
+        except Exception as e:
+            print(f"Setup: Failed to fetch site-packages paths: {e}")
+
+        package_path = None
+        for path in site_packages:
+            potential_path = os.path.join(path, package_name)
+            if os.path.exists(potential_path):
+                package_path = path
+                break
+
+        if package_path:
+            print(f"Setup: Found '{package_name}' in '{package_path}'. Adding it to sys.path.")
+            if package_path not in sys.path:
+                sys.path.append(package_path)
+            print(f"Setup: Successfully added '{package_path}' to sys.path.")
             
-            if isWindows():
-                return os.path.join(sys.prefix, 'bin', 'python.exe')
-            elif isMacOS():
-            
-                try:
-                    # 2.92 and older
-                    path = bpy.app.binary_path_python
-                except AttributeError:
-                    # 2.93 and later
-                    path = sys.executable
-                return os.path.abspath(path)
-            elif isLinux():
-                return os.path.join(sys.prefix, 'sys.prefix/bin', 'python')
-            else:
-                print("sorry, still not implemented for ", os.name, " - ", platform.system)
-        
-        def installModule(packageName):
-            python_exe = python_exec()
+            # Verify module import again
+            print(f"Setup: Verifying the module '{package_name}' can now be imported...")
+            spec = importlib.util.find_spec(package_name)
+            if spec is not None:
+                print(f"Setup: '{package_name}' is now accessible.")
+                return
 
-            try:
-                subprocess.call([python_exe, "import ", packageName])
-            except:
-               # upgrade pip
-                subprocess.call([python_exe, "-m", "ensurepip"])
-                subprocess.call([python_exe, "-m", "pip", "install", "--upgrade", "pip"])
-               # install required packages
-                subprocess.call([python_exe, "-m", "pip", "install", packageName])
-                
-        installModule(package_name)
-        
-        
-        print(f"{package_name!r} has been imported")
-    else:
-        print(f"can't find the {package_name!r} module")
+        # If module still cannot be imported, proceed to installation
+        print(f"Setup: '{package_name}' is not installed. Preparing installation...")
+        python_exe = sys.executable
 
-        ## Use pip command to install fdsreader. Restart after installation required.
-        #Need to check if previous function is still needed
-        import pip
-        pip.main(['install', 'fdsreader', '--user'])
+        # Ensure pip is available and updated
+        print("Setup: Ensuring pip is available and up to date...")
+        import subprocess
+        subprocess.run([python_exe, "-m", "ensurepip", "--upgrade"], check=True)
+        subprocess.run([python_exe, "-m", "pip", "install", "--upgrade", "pip"], check=True)
+        print("Setup: Pip setup and update completed.")
+
+        # Install the requested package
+        print(f"Setup: Installing the package '{package_name}'...")
+        subprocess.run([python_exe, "-m", "pip", "install", package_name], check=True)
+        print(f"Setup: Installation of '{package_name}' completed.")
+
+        # Add the newly installed package path to sys.path
+        print("Setup: Searching for the installed package path...")
+        for path in site_packages:
+            if os.path.exists(os.path.join(path, package_name)):
+                package_path = path
+                break
+
+        if package_path:
+            print(f"Setup: Found installed '{package_name}' in '{package_path}'. Adding to sys.path.")
+            if package_path not in sys.path:
+                sys.path.append(package_path)
+            print(f"Setup: Successfully added '{package_path}' to sys.path.")
+        else:
+            raise ImportError(f"Setup: Failed to locate '{package_name}' after installation.")
+
+        # Verify the module import again after installation
+        print(f"Setup: Verifying the module '{package_name}' can now be imported...")
+        spec = importlib.util.find_spec(package_name)
+        if spec is None:
+            raise ImportError(f"Setup: '{package_name}' is installed but cannot be imported.")
+
+    except Exception as e:
+        print(f"Setup: Failed to install '{package_name}': {e}")
+        blender_python = sys.executable
+        print("\nSetup: If manual installation is required, try running the following commands as administrator:")
+        print(f'    "{blender_python}" -m ensurepip --upgrade')
+        print(f'    "{blender_python}" -m pip install --upgrade pip')
+        print(f'    "{blender_python}" -m pip install {package_name}')
 
 
 def set_meshes_list():
@@ -167,7 +214,7 @@ def create_material(shader_name):
 
 
 
-bl_classes = [Development_OT_SimulationSetup]
+bl_classes = [Development_OT_SimulationSetup, WM_OT_ToggleSystemConsole]
 
 
 def register():

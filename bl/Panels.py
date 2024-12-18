@@ -1,6 +1,5 @@
 from bpy.types import Panel, PropertyGroup, Scene
-from bpy.props import EnumProperty, PointerProperty, StringProperty
-
+from bpy.props import BoolProperty, EnumProperty, PointerProperty, StringProperty
 
 
 """Panels in 3D Viewport"""
@@ -12,14 +11,14 @@ from bpy.props import EnumProperty, PointerProperty, StringProperty
 
 class SimulationSetup(PropertyGroup):
     sim_path: StringProperty(
-        name = "Path",
+        name = "FDS Path",
         default = "",
         description = "Define path to FDS-Simulation. Neccessary for Simulation Setup.",
         subtype = "FILE_PATH"
     )
     
     vdb_path: StringProperty(
-        name = "Path",
+        name = "VDB Path",
         default = "",
         description = "Define path for operations with VDBs. At this location subfolders are created for VDB-Export. For VDB-Import those subfolders are automatically detected.",
         subtype = "FILE_PATH"
@@ -34,13 +33,19 @@ class SimulationSetup(PropertyGroup):
             for item in list:
                 items.append(item)
         except:
-            pass
+            return [("NONE", "No Meshes Found", "")]
         return items
 
     mesh_enum: EnumProperty(
         name = "Custom Mesh",
         description = "Select mesh for custom operators",
         items = get_items
+    )
+
+    console_toggle : BoolProperty(
+        name = "Toggled System Console",
+        description = "Toggle system console on/off",
+        default = False
     )
 
 
@@ -55,6 +60,9 @@ class VIEW3D_PT_FDSVisual(Panel):
     def draw(self, context):
         layout = self.layout
         setup = context.scene.setup_tool
+
+        layout.prop(setup, "console_toggle")
+        layout.operator("wm.toggle_console_property", icon="CONSOLE")
         
         layout.label(text="Path to FDS-Simulation:")
         layout.prop(setup, "sim_path")
