@@ -110,19 +110,20 @@ def Create_Shader_Concrete():
     TexCoord = nodes.new('ShaderNodeTexCoord')
     TexCoord.location = (0,0)
     
-    NoiseTex = nodes.new('ShaderNodeTexNoise')
-    NoiseTex.location = (250,600)
-    NoiseTex.inputs[2].default_value = 2
+    NoiseTex1 = nodes.new('ShaderNodeTexNoise')
+    NoiseTex1.location = (250,600)
+    NoiseTex1.inputs[2].default_value = 2
     
     VoronoiTex = nodes.new('ShaderNodeTexVoronoi')
     VoronoiTex.location = (250,300)
     VoronoiTex.inputs[2].default_value = 2
     
-    MusgraveTex = nodes.new('ShaderNodeTexMusgrave')
-    MusgraveTex.location = (250,-100)
-    MusgraveTex.inputs[2].default_value = 2
-    MusgraveTex.inputs[3].default_value = 9
-    MusgraveTex.inputs[4].default_value = 0
+    NoiseTex2 = nodes.new('ShaderNodeTexNoise')
+    NoiseTex2.location = (250,-100)
+    NoiseTex2.normalize = False
+    NoiseTex2.inputs[2].default_value = 2
+    NoiseTex2.inputs[3].default_value = 8
+    NoiseTex2.inputs[4].default_value = 1
     
     Mix1 = nodes.new('ShaderNodeMix')
     Mix1.location = (500,0)
@@ -140,15 +141,15 @@ def Create_Shader_Concrete():
     ColorRamp.color_ramp.elements[1].color = (0.2, 0.2, 0.22, 1)
     
     ##Connect Nodes
-    links.new(TexCoord.outputs[3], MusgraveTex.inputs[0])
+    links.new(TexCoord.outputs[3], NoiseTex2.inputs[0])
     links.new(TexCoord.outputs[3], VoronoiTex.inputs[0])
-    links.new(TexCoord.outputs[3], NoiseTex.inputs[0])
+    links.new(TexCoord.outputs[3], NoiseTex1.inputs[0])
     
     links.new(VoronoiTex.outputs[0], Mix1.inputs[0])
-    links.new(MusgraveTex.outputs[0], Mix1.inputs[6])
+    links.new(NoiseTex2.outputs[0], Mix1.inputs[6])
     
     links.new(Mix1.outputs[2], Mix2.inputs[6])
-    links.new(NoiseTex.outputs[0], Mix2.inputs[7])
+    links.new(NoiseTex1.outputs[0], Mix2.inputs[7])
     
     links.new(Mix2.outputs[2], ColorRamp.inputs[0])
     
@@ -569,19 +570,19 @@ def Create_Shader_Steel():
     TexCoord = nodes.new('ShaderNodeTexCoord')
     TexCoord.location = (0,0)
     
-    MusgraveTex = nodes.new('ShaderNodeTexMusgrave')
-    MusgraveTex.location = (250,0)
-    MusgraveTex.inputs[2].default_value = 3
-    MusgraveTex.inputs[3].default_value = 9
-    MusgraveTex.inputs[4].default_value = 0
-    MusgraveTex.inputs[5].default_value = 3
-    MusgraveTex.musgrave_type = 'MULTIFRACTAL'
+    NoiseTex1 = nodes.new('ShaderNodeTexNoise')
+    NoiseTex1.location = (250,0)
+    NoiseTex1.inputs[2].default_value = 3
+    NoiseTex1.inputs[3].default_value = 8
+    NoiseTex1.inputs[4].default_value = 1
+    NoiseTex1.inputs[5].default_value = 3
+    NoiseTex1.noise_type = 'MULTIFRACTAL'
     
-    NoiseTex = nodes.new('ShaderNodeTexNoise')
-    NoiseTex.location = (250,-300)
-    NoiseTex.inputs[2].default_value = 9
-    NoiseTex.inputs[3].default_value = 9
-    NoiseTex.inputs[4].default_value = 0.8
+    NoiseTex2 = nodes.new('ShaderNodeTexNoise')
+    NoiseTex2.location = (250,-300)
+    NoiseTex2.inputs[2].default_value = 9
+    NoiseTex2.inputs[3].default_value = 9
+    NoiseTex2.inputs[4].default_value = 0.8
     
     Mix = nodes.new('ShaderNodeMix')
     Mix.location = (500,-300)
@@ -594,13 +595,13 @@ def Create_Shader_Steel():
     ColorRamp.color_ramp.elements[1].color = (0.5, 0.5, 0.5, 1)
 
     ##Connect Nodes
-    links.new(TexCoord.outputs[3], MusgraveTex.inputs[0])
-    links.new(TexCoord.outputs[3], NoiseTex.inputs[0])
+    links.new(TexCoord.outputs[3], NoiseTex1.inputs[0])
+    links.new(TexCoord.outputs[3], NoiseTex2.inputs[0])
     
-    links.new(MusgraveTex.outputs[0], ColorRamp.inputs[0])
+    links.new(NoiseTex1.outputs[0], ColorRamp.inputs[0])
     
-    links.new(MusgraveTex.outputs[0], Mix.inputs[6])
-    links.new(NoiseTex.outputs[0], Mix.inputs[7])
+    links.new(NoiseTex1.outputs[0], Mix.inputs[6])
+    links.new(NoiseTex2.outputs[0], Mix.inputs[7])
     
     links.new(ColorRamp.outputs[0], PrincipledBSDF.inputs[0])
     links.new(Mix.outputs[2], PrincipledBSDF.inputs[2])
@@ -618,16 +619,16 @@ def Create_Shader_Glass():
     
     ## Editing some material and scene setting
     material = bpy.data.materials[material.name]
-    material.use_screen_refraction = True
-    material.blend_method = 'HASHED'
-    material.shadow_method = 'HASHED'
+    # material.use_screen_refraction = True
+    # material.blend_method = 'HASHED'
+    # material.shadow_method = 'HASHED'
         
-    bpy.data.scenes["Scene"].eevee.use_ssr = True
-    bpy.data.scenes["Scene"].eevee.use_ssr_refraction = True
-    bpy.data.scenes["Scene"].eevee.taa_render_samples = 132
-    bpy.data.scenes["Scene"].eevee.taa_samples = 64
-    bpy.data.scenes["Scene"].eevee.use_gtao = True
-    bpy.data.scenes["Scene"].eevee.gtao_distance = 5
+    # bpy.data.scenes["Scene"].eevee.use_ssr = True
+    # bpy.data.scenes["Scene"].eevee.use_ssr_refraction = True
+    # bpy.data.scenes["Scene"].eevee.taa_render_samples = 132
+    # bpy.data.scenes["Scene"].eevee.taa_samples = 64
+    # bpy.data.scenes["Scene"].eevee.use_gtao = True
+    # bpy.data.scenes["Scene"].eevee.gtao_distance = 5
     
     ## Referencing existing Nodes
     # For some reason blender sometimes creates Principled Volume instead of Principled BSDF
@@ -641,7 +642,7 @@ def Create_Shader_Glass():
     PrincipledBSDF = nodes.new('ShaderNodeBsdfPrincipled')
     PrincipledBSDF.location = (0,0)
     PrincipledBSDF.inputs[2].default_value = 0
-    PrincipledBSDF.inputs[17].default_value = 1
+    PrincipledBSDF.inputs[18].default_value = 1
     
     TransparentBSDF = nodes.new('ShaderNodeBsdfTransparent')
     TransparentBSDF.location = (0,100)

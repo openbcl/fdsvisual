@@ -24,8 +24,8 @@ bl_info = {
     "author" : "Toni Nabrotzky",
     "e-mail" : "t.nabrotzky@bcl-leipzig.de",
     "description" : "Visualization of FDS-Simulation results with VDB-files",
-    "version" : (1,0,0),
-    "blender" : (3, 5, 1),
+    "version" : (1,0,1),
+    "blender" : (4, 1, 0),
     "location" : "View3d > Tool",
     "category" : "Import-Export", #https://docs.blender.org/manual/en/latest/addons/index.html
     "warning" : "", #used for warning icon and text in addons panel
