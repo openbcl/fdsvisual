@@ -175,7 +175,7 @@ class VIEW3D_PT_Materials(Panel):
         row = layout.row()
         row.operator("shader.materialdelete_operator", icon = "TRASH")
         row = layout.row()
-        row.operator("shader.fire_n_smoke_operator", icon = "BRUSH_CURVES_DELETE")
+        row.operator("shader.fire_n_smoke_operator", icon = "BRUSH_DATA") 
         row = layout.row()
         row.operator("shader.smv_operator", icon = "SEQUENCE_COLOR_03")
         row = layout.row()
